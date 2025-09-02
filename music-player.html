@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #fdbb2d;
+        }
+        
+        .now-playing {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .now-playing h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .now-playing p {
+            color: #ccc;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin: 1.5rem 0;
+            cursor: pointer;
+        }
+        
+        .progress {
+            height: 100%;
+            background: #fdbb2d;
+            border-radius: 4px;
+            width: 0%;
+        }
+        
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            color: #fdbb2d;
+        }
+        
+        .btn-play {
+            font-size: 2.5rem;
+        }
+        
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .volume-slider {
+            width: 100px;
+        }
+        
+        .playlist {
+            margin-top: 2rem;
+        }
+        
+        .playlist h3 {
+            margin-bottom: 1rem;
+            color: #fdbb2d;
+        }
+        
+        .song-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .song-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .song-item.active {
+            background: rgba(253, 187, 45, 0.2);
+            color: #fdbb2d;
+        }
+        
+        .song-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .song-title {
+            font-weight: 500;
+        }
+        
+        .song-artist {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        
+        .song-duration {
+            color: #ccc;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .controls {
+                gap: 1rem;
+            }
+            
+            .btn {
+                font-size: 1.2rem;
+            }
+            
+            .btn-play {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Music Player</h1>
+        
+        <div class="now-playing">
+            <h2 id="current-song-title">Pilih lagu</h2>
+            <p id="current-song-artist">-</p>
+        </div>
+        
+        <div class="progress-container" id="progress-container">
+            <div class="progress" id="progress"></div>
+        </div>
+        
+        <div class="time-display">
+            <span id="current-time">0:00</span>
+            <span id="duration">0:00</span>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="prev">⏮</button>
+            <button class="btn btn-play" id="play">▶</button>
+            <button class="btn" id="next">⏭</button>
+        </div>
+        
+        <div class="volume-container">
+            <span class="btn">🔈</span>
+            <input type="range" class="volume-slider" id="volume" min="0" max="1" step="0.01" value="0.7">
+            <span class="btn">🔊</span>
+        </div>
+        
+        <div class="playlist">
+            <h3>Daftar Putar</h3>
+            <div id="playlist-container">
+                <!-- Daftar lagu akan dimuat di sini melalui JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-player"></audio>
+
+    <script>
+        // Daftar lagu (ganti dengan path file musik Anda)
+        const songs = [
+            {
+                title: "Lagu Pertama",
+                artist: "Artis Pertama",
+                src: "https://assets.codepen.io/217233/kw_after_the_rain.mp3",
+                duration: "3:45"
+            },
+            {
+                title: "Lagu Kedua",
+                artist: "Artis Kedua",
+                src: "https://assets.codepen.io/217233/kw_better_days.mp3",
+                duration: "4:20"
+            },
+            {
+                title: "Lagu Ketiga",
+                artist: "Artis Ketiga",
+                src: "https://assets.codepen.io/217233/kw_sunny_side_up.mp3",
+                duration: "2:55"
+            }
+        ];
+
+        // Elemen DOM
+        const audioPlayer = document.getElementById('audio-player');
+        const playBtn = document.getElementById('play');
+        const prevBtn = document.getElementById('prev');
+        const nextBtn = document.getElementById('next');
+        const volumeSlider = document.getElementById('volume');
+        const progressContainer = document.getElementById('progress-container');
+        const progress = document.getElementById('progress');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+        const currentSongTitle = document.getElementById('current-song-title');
+        const currentSongArtist = document.getElementById('current-song-artist');
+        const playlistContainer = document.getElementById('playlist-container');
+        
+        // Variabel state
+        let currentSongIndex = 0;
+        let isPlaying = false;
+        
+        // Inisialisasi player
+        function initPlayer() {
+            loadSong(currentSongIndex);
+            renderPlaylist();
+            
+            // Event listeners
+            playBtn.addEventListener('click', () => {
+                if (isPlaying) {
+                    pauseSong();
+                } else {
+                    playSong();
+                }
+            });
+            
+            prevBtn.addEventListener('click', prevSong);
+            nextBtn.addEventListener('click', nextSong);
+            
+            audioPlayer.addEventListener('timeupdate', updateProgress);
+            audioPlayer.addEventListener('ended', nextSong);
+            
+            progressContainer.addEventListener('click', setProgress);
+            
+            volumeSlider.addEventListener('input', () => {
+                audioPlayer.volume = volumeSlider.value;
+            });
+        }
+        
+        // Memuat lagu
+        function loadSong(index) {
+            const song = songs[index];
+            audioPlayer.src = song.src;
+            currentSongTitle.textContent = song.title;
+            currentSongArtist.textContent = song.artist;
+            
+            // Update kelas aktif di playlist
+            const songItems = document.querySelectorAll('.song-item');
+            songItems.forEach((item, idx) => {
+                if (idx === index) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+        
+        // Memutar lagu
+        function playSong() {
+            isPlaying = true;
+            audioPlayer.play();
+            playBtn.innerHTML = '⏸';
+        }
+        
+        // Menghentikan lagu
+        function pauseSong() {
+            isPlaying = false;
+            audioPlayer.pause();
+            playBtn.innerHTML = '▶';
+        }
+        
+        // Lagu sebelumnya
+        function prevSong() {
+            currentSongIndex--;
+            if (currentSongIndex < 0) {
+                currentSongIndex = songs.length - 1;
+            }
+            loadSong(currentSongIndex);
+            if (isPlaying) {
+                playSong();
+            }
+        }
+        
+        // Lagu berikutnya
+        function nextSong() {
+            currentSongIndex++;
+            if (currentSongIndex > songs.length - 1) {
+                currentSongIndex = 0;
+            }
+            loadSong(currentSongIndex);
+            if (isPlaying) {
+                playSong();
+            }
+        }
+        
+        // Update progress bar
+        function updateProgress(e) {
+            const { duration, currentTime } = e.srcElement;
+            if (duration) {
+                // Update progress bar width
+                const progressPercent = (currentTime / duration) * 100;
+                progress.style.width = `${progressPercent}%`;
+                
+                // Update waktu
+                const durationMinutes = Math.floor(duration / 60);
+                let durationSeconds = Math.floor(duration % 60);
+                if (durationSeconds < 10) {
+                    durationSeconds = `0${durationSeconds}`;
+                }
+                
+                const currentMinutes = Math.floor(currentTime / 60);
+                let currentSeconds = Math.floor(currentTime % 60);
+                if (currentSeconds < 10) {
+                    currentSeconds = `0${currentSeconds}`;
+                }
+                
+                // Delay switching duration element to avoid NaN
+                if (durationSeconds) {
+                    durationEl.textContent = `${durationMinutes}:${durationSeconds}`;
+                }
+                currentTimeEl.textContent = `${currentMinutes}:${currentSeconds}`;
+            }
+        }
+        
+        // Set progress bar ketika diklik
+        function setProgress(e) {
+            const width = this.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audioPlayer.duration;
+            
+            audioPlayer.currentTime = (clickX / width) * duration;
+        }
+        
+        // Render daftar putar
+        function renderPlaylist() {
+            playlistContainer.innerHTML = '';
+            
+            songs.forEach((song, index) => {
+                const songItem = document.createElement('div');
+                songItem.classList.add('song-item');
+                if (index === currentSongIndex) {
+                    songItem.classList.add('active');
+                }
+                
+                songItem.innerHTML = `
+                    <div class="song-info">
+                        <span class="song-title">${song.title}</span>
+                        <span class="song-artist">${song.artist}</span>
+                    </div>
+                    <span class="song-duration">${song.duration}</span>
+                `;
+                
+                songItem.addEventListener('click', () => {
+                    currentSongIndex = index;
+                    loadSong(currentSongIndex);
+                    playSong();
+                });
+                
+                playlistContainer.appendChild(songItem);
+            });
+        }
+        
+        // Inisialisasi player ketika halaman dimuat
+        window.addEventListener('DOMContentLoaded', initPlayer);
+    </script>
+</body>
+</html>
