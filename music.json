@@ -1,9 +1,0 @@
-    "music": [
-        { "path": "./assets/mp3/bernadya.mp3", "title": "untung Nya Hidup Masi Berjalan", "artist": "Bernadya", "image": null },
-        { "path": "./assets/mp3/feast.mp3", "title": "Nina", "artist": ".feast", "image": null },
-        { "path": "./assets/mp3/fourtwnty.mp3", "title": "Mangu", "artist": "Fourtwnty", "image": null },
-        { "path": "./assets/mp3/nike.mp3", "title": "Bintang Kehidupan", "artist": "Nike Ardila", "image": null },
-        { "path": "./assets/mp3/rio.mp3", "title": "Cinta Abadi", "artist": "Rio Clappy", "image": null },
-        { "path": "./assets/mp3/thelantis.mp3", "title": "Bunga Maaf", "artist": "The Lantis", "image": null }
-    ],
-    "defaultVolume": 30
